@@ -64,10 +64,15 @@ public class JsonParser
  private void getArray(ArrayList<String[]> result, String name)
  throws MyIOException, MyParseException
  {
+  if (Debug)Utilities.debug("JsonParser.getArray enter{"
+                           +"name="    +name    +"\t"
+                           +"ObjectId="+ObjectId+"}");
   StringBuffer value = new StringBuffer();
   while (true)
         {
          String token = Tokenizer.getTokenOrDie();
+         if (Debug)Utilities.debug("JsonParser.getArray"
+                                  +"token="+token+"}");
          if (token.equals("{"))
             {
              getObject(result,name);
@@ -77,7 +82,14 @@ public class JsonParser
             {
              if (value.length()>0)
                  result.add((new String[]{ObjectId.getId(),name,value.toString()}));
+             if (Debug)Utilities.debug("JsonParser.getArray return 1");
              return;
+            }
+         if (token.equals("["))
+            {
+             getArray(result,name);
+             if (Debug)Utilities.debug("JsonParser.getArray return 2");
+             continue;
             }
          if (!Tokenizer.isSeparator(token))
               value.append(token);
@@ -89,29 +101,36 @@ public class JsonParser
  private void getObject(ArrayList<String[]> result, String name)
  throws MyIOException, MyParseException
  {
+  if (Debug)Utilities.debug("JsonParser.getObject enter{"
+                           +"name="    +name    +"\t"
+                           +"ObjectId="+ObjectId+"}");
   ObjectId.increaseLevel();
   ObjectId.bumpId();
   while (true)
         {
          String token = Tokenizer.getTokenOrDie();
-         if (Debug)System.err.println("getObject debug{"
-                                     +"token="+token+"}");
+         if (Debug)Utilities.debug("JsonParser.getObject debug{"
+                                  +"token="+token+"}");
          if (Tokenizer.isSeparator(token))continue;
          if (token.equals("}"))
             {
              ObjectId.decreaseLevel();
+             if (Debug)Utilities.debug("JsonParser.getObject return 1");
              return;
             }
          String longName = name==null?Utilities.dequote(token):name+Separator+Utilities.dequote(token);
          token = Tokenizer.getTokenOrDie();
+         if (Debug)Utilities.debug("JsonParser.getObject{"
+                                  +"token="+token+"}");
          if (!token.equals(":"))
             {
-             System.err.println(Utilities.toStringMillis(new Date())+"\tgetObject missing :{"
-                               +"lineNo="  +Tokenizer.getCurrentTokenLineNo()+"\t"
-                               +"longName="+longName                         +"\t"
-                               +"name="    +name                             +"\t"
-                               +"ObjectId="+ObjectId                         +"\t"
-                               +"token="   +token                            +"}");
+             Utilities.error("JsonParser.getObject missing :{"
+                             +"lineNo="  +Tokenizer.getCurrentTokenLineNo()      +"\t"
+                             +"longName="+longName                               +"\t"
+                             +"name="    +name                                   +"\t"
+                             +"ObjectId="+ObjectId                               +"\t"
+                             +"offset="  +Tokenizer.getCurrentTokenOffsetInLine()+"\t"
+                             +"token="   +token                                  +"}");
              throw new MyParseException("JsonParser.getObject missing :");
             }
          getValue(result,longName);
@@ -121,22 +140,28 @@ public class JsonParser
  private void getValue(ArrayList<String[]> result, String name)
  throws MyIOException, MyParseException
  {
+  if (Debug)Utilities.debug("JsonParser.getValue enter{"
+                           +"name="    +name    +"\t"
+                           +"ObjectId="+ObjectId+"}");
   String token = Tokenizer.getTokenOrDie();
-  if (Debug)System.err.println("getValue debug{"
-                              +"name=" +name +"\t"
-                              +"token="+token+"}");
+  if (Debug)Utilities.debug("JsonParser.getValue debug{"
+                           +"name=" +name +"\t"
+                           +"token="+token+"}");
 
   if (token.equals("{"))
      {
       getObject(result,name);
+      if (Debug)Utilities.debug("JsonParser.getValue return 1");
       return;
      }
   if (token.equals("["))
      {
       getArray(result,name);
+      if (Debug)Utilities.debug("JsonParser.getValue return 2");
       return;
      }
   result.add(new String[]{ObjectId.getId(),name,Utilities.dequote(token)});
+  if (Debug)Utilities.debug("JsonParser.getValue return 3");
  }
 
  public JsonParser(){}
@@ -146,13 +171,16 @@ public class JsonParser
  {
   ArrayList<String[]> result = new ArrayList<String[]>();
   Tokenizer = new MyStreamTokenizer(new StringReader(parm), null);
+  Tokenizer.setDebug(false);
   Tokenizer.setSeparatorChars(new char[]{','});
   Tokenizer.setSymbolChars   (new char[]{',','[',']','{','}',':'});
 
   for (String token = Tokenizer.getToken(); token != null; token = Tokenizer.getToken())
       {
-       if (Debug)System.err.println("run debug{"
-                                   +"token="+token+"}");
+       if (Debug)Utilities.debug("JsonParser.parse{"
+                                +"token="+token+"}");
+       if (Debug)Utilities.debug("JsonParser.parse{"
+                                 +"ungettoken="+token+"}");
        Tokenizer.ungetToken();
        getValue(result,null);
       }
