@@ -47,6 +47,7 @@ public class Utilities
  private static SimpleDateFormat SDFDate                      =new SimpleDateFormat("MM/dd/yyyy HH:mm:ss"         );
  private static SimpleDateFormat SDFDayDateTime               =new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy"  );
  private static SimpleDateFormat SDFDayDateTime5              =new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy"    );
+ private static SimpleDateFormat SDFDayDateTimeZ              =new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss z"  );
  private static SimpleDateFormat SDF_d_hh_mm_ss_SSS           =new SimpleDateFormat("d HH:mm:ss.SSS"              );
  private static SimpleDateFormat SDF_hh_mm_ss_SSS             =new SimpleDateFormat("HH:mm:ss.SSS"                );
  private static SimpleDateFormat SDFddmmmyyhhmmss             =new SimpleDateFormat("ddMMMyy:HH:mm:ss"            );
@@ -60,6 +61,7 @@ public class Utilities
  private static SimpleDateFormat SDFmdy3                      =new SimpleDateFormat("MMM dd yyyy"                 );
  private static SimpleDateFormat SDFmdy4                      =new SimpleDateFormat("MM/dd/yy"                    );
  private static SimpleDateFormat SDFms                        =new SimpleDateFormat("mm:ss"                       );
+ private static SimpleDateFormat SDFymdhm                     =new SimpleDateFormat("yyyy-MM-dd HH:mm"            );
  private static SimpleDateFormat SDFymdhms                    =new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS"     );
  private static SimpleDateFormat SDFymdhms2                   =new SimpleDateFormat("yyyy/MM/dd HH:mm:ss"         );
  private static SimpleDateFormat SDFymdhms3                   =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"         );
@@ -664,7 +666,7 @@ public class Utilities
 //            if (IsDebug())System.err.println("Utilities.isGetDate note unknown length{"
 //                                   +"s="             +s             +"\t"
 //                                   +"strings.length="+strings.length+"}");
-            return null;
+            return isGetTime(s);
            }
 //        System.err.println("Utilities.isGetDate 4{"
 //                          +"s="      +s                          +"\t"
@@ -676,8 +678,9 @@ public class Utilities
                 else                              return SDFymdhms2.parse(s); 
             else
             if (strings[0].indexOf("-") == 4)
-                if (strings[1].indexOf(",") == -1)return SDFymdhms3.parse(s);    
-                else                              return SDFymdhms4.parse(s);
+                if (strings[1].split(":").length== 2)return SDFymdhm  .parse(s); else
+                if (strings[1].indexOf(",")     ==-1)return SDFymdhms3.parse(s); else
+                                                     return SDFymdhms4.parse(s);
             else
             if (strings[1].indexOf("/") >  0)     return SDFmdy    .parse(strings[1]);
 
@@ -721,11 +724,21 @@ public class Utilities
            }
 
         if (strings.length == 5)return SDFDayDateTime5.parse(s);
-        if (strings.length == 6)return SDFDayDateTime .parse(s);
+        if (strings.length == 6)
+            if (strings[4].contains(":"))
+               {
+                if (strings[5].contains("GMT")) // SimpleDateFormat doesn't like GMT any more.
+                    s = s.replace("GMT","UTC");
+                return SDFDayDateTimeZ.parse(s);
+               }
+            else    
+                return SDFDayDateTime .parse(s);
         return SDFDate.parse(s);
        }
   catch(ParseException e)
        {
+        Date result = isGetTime(s);
+        if (result != null)return result;
         System.err.println("Utilities.isGetDate note parse exeption{"
                    +"e="   +toString(e)     +"\t"
                    +"nest="+Utilities.nest()+"\t"
@@ -739,10 +752,28 @@ public class Utilities
  public static Date isGetTime(String s)
  {
   s = s.trim();
-  if (s.indexOf(" ") != -1)return null;
 
   String[] strings = s.split(":");
-  if (strings.length != 3)return null;
+  if (strings.length == 2)
+      try {
+           Date time = null;
+           if (s.endsWith("M") ||
+               s.endsWith("m"))time = SDFhma.parse(s);
+           else                time = SDFhm .parse(s);
+
+           Date time0 = SDFhm.parse("00:00"); // because time zone.
+           Date result = new Date(time.getTime()-time0.getTime());
+//           debug("Utilities.isGetTime{"
+//                +"result="+result+"\t"
+//                +"time="  +time  +"\t"
+//                +"time0=" +time0 +"}");
+           return result;
+          }
+      catch (ParseException e){Utilities.error("Utilities.isGetTime ParseException{"
+                                       +"e="+Utilities.toString(e)+"\t"
+                                       +"s="+s                    +"}");}
+  if (strings.length !=  3)return null;
+  if (s.indexOf(" ") != -1)return null;
 
   if (!isNumeric(strings[0]))return null;
   if (!isNumeric(strings[1]))return null;
