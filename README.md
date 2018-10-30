@@ -2,6 +2,8 @@ Collect*.jar files contain source and a build bat. Build_CollectSense.bat assume
 Everything was developed under Windows and the build files have some incidental Windows specific parts. I have not tested on Linux, Mac, etc.
 The build just requires javac. No maven, ant, Eclipse, etc. I use java jdk 1.8. I don't know what the minimum level required is. I run on Windows 7.
 
+Jar files are available at https://drive.google.com/open?id=1YEqEQb3opZ-8zBCVRfJtuSP9Ww9CL7-0
+
 Quality: I've been using (and tweaking) the infrastructure for years. It should work, but I know it isn't bulletproof yet. Invalid input can be
          tough to track down and can produce exceptions. I keep working to help track down problems better, but always pointing to the exact
          spot is still more of an aspiration. I wouldn't be surprised if there is a better environment to do what I want these days.
@@ -43,7 +45,7 @@ DurationSecs          = 3600
 DeviceName            =DuanesComputerStuff
 IP                    =<IP Address of TP-LINK HS-110 (Kasa) Device>
 OutputFile            ={
-                        Columns={IntervalStart DeviceName WattsMean}
+                        Columns={IntervalStart DeviceName MeanWatts}
                         File=CollectKasa.tsv
                        }
 PollingIntervalSecs   =    1
