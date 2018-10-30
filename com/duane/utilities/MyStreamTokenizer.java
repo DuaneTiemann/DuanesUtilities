@@ -265,7 +265,7 @@ public class MyStreamTokenizer
 
  private void dumpData(String title)
  {
-  if (!(Debug&&Utilities.debug()))return;
+  if (!Debug)return;
   dumpData_(title);
  }
 
@@ -276,7 +276,7 @@ public class MyStreamTokenizer
               +"CurrentLocalOffsetInBuffer="         +CurrentLocalOffsetInBuffer         +"\t"
               +"CurrentLineStartLocalOffsetInBuffer="+CurrentLineStartLocalOffsetInBuffer+"\t"
               +"TokenHistory="                       +Utilities.toString(TokenHistory)   +"}";
-  System.err.println(msg);
+  Utilities.debug(msg);
  }
 
  public void eraseCurrentToken()
@@ -291,7 +291,7 @@ public class MyStreamTokenizer
        TokenInfo tokenInfo = TokenHistory.removeLast();
        if (tokenInfo == null)
           {
-           System.err.println("MyStreamTokenizer.eraseCurrentToken CurrentTokenInfo not found in TokenHistory");
+           Utilities.error("MyStreamTokenizer.eraseCurrentToken CurrentTokenInfo not found in TokenHistory");
            throw new MyParseException("MyStreamTokenizer.eraseCurrentToken CurrentTokenInfo not found in TokenHistory");
           }
 
@@ -408,8 +408,8 @@ public class MyStreamTokenizer
  private String getNontransparentString()
  throws MyIOException, MyParseException
  {
-  if (Debug&&Utilities.debug())System.err.println("getNontransparentString entry note CurrentLocalOffsetInBuffer{"
-                                          +"CurrentLocalOffsetInBuffer="+CurrentLocalOffsetInBuffer+"}");
+  if (Debug)Utilities.debug("MyStreamTokenizer.getNontransparentString entry note CurrentLocalOffsetInBuffer{"
+                           +"CurrentLocalOffsetInBuffer="+CurrentLocalOffsetInBuffer+"}");
   advancePastWhitespace();
   advancePastComments  ();
   advancePastWhitespace();
@@ -417,8 +417,8 @@ public class MyStreamTokenizer
                                             +"where="+where()+"}");                                    // that wasn't a symbol.
   long startGlobalOffset = getBufferGlobalOffset(CurrentLocalOffsetInBuffer);
   advancePastNontransparentData();
-  if (Debug&&Utilities.debug())System.err.println("getNontransparentString exit note CurrentLocalOffsetInBuffer{"
-                                          +"CurrentLocalOffsetInBuffer="+CurrentLocalOffsetInBuffer+"}");
+  if (Debug)Utilities.debug("MyStreamTokenizer.getNontransparentString exit note CurrentLocalOffsetInBuffer{"
+                           +"CurrentLocalOffsetInBuffer="+CurrentLocalOffsetInBuffer+"}");
   return Buffer.substring(getBufferLocalOffset(startGlobalOffset),CurrentLocalOffsetInBuffer);
  }
 
@@ -461,18 +461,18 @@ public class MyStreamTokenizer
  {
   String token = getToken_();
   String substitution = Substitutions.get(token);
-  if (Debug&&Utilities.debug())
+  if (Debug)
      {
-      System.err.println("getToken note token{"
-                        +"FileName="    +Source[SourceNo].FileName+"\t"
-                        +"substitution="+substitution             +"\t"
-                        +"token="       +token                    +"\t"
-                        +"nest="        +Utilities.nest()         +"}");
-      System.err.println("getToken note TokenHistory{"
-                        +"TokenHistory="+Utilities.toString(TokenHistory)+"}");
+      Utilities.debug("MyStreamTokenizer.getToken note token{"
+                     +"FileName="    +Source[SourceNo].FileName+"\t"
+                     +"substitution="+substitution             +"\t"
+                     +"token="       +token                    +"\t"
+                     +"nest="        +Utilities.nest()         +"}");
+      Utilities.debug("MyStreamTokenizer.getToken note TokenHistory{"
+                     +"TokenHistory="+Utilities.toString(TokenHistory)+"}");
       if (TokenHistoryIterator != null)
-          System.err.println("getToken note TokenHistoryIterator{"
-                            +"TokenHistoryIterator.nextIndex="+TokenHistoryIterator.nextIndex()+"}");
+          Utilities.debug("MyStreamTokenizer.getToken note TokenHistoryIterator{"
+                         +"TokenHistoryIterator.nextIndex="+TokenHistoryIterator.nextIndex()+"}");
      }
 
   if (substitution != null)token = substitution;
@@ -522,8 +522,8 @@ public class MyStreamTokenizer
   if (TokenHistoryIterator.hasNext())
      {
       CurrentTokenInfo = TokenHistoryIterator.next();
-      if (Debug&&Utilities.debug())System.err.println("MyPtxStreamTokenizer.getToken_ get token from history{"
-                                              +"token="+CurrentTokenInfo.getToken()+"}");
+      if (Debug)Utilities.debug("MyStreamTokenizer.getToken_ get token from history{"
+                               +"token="+CurrentTokenInfo.getToken()+"}");
       return CurrentTokenInfo.getToken();
      }
   TokenHistoryIterator = null;
@@ -533,8 +533,8 @@ public class MyStreamTokenizer
  private TokenInfo getTokenInfo(long id)
  throws MyParseException
  {
-  if (Debug&&Utilities.debug())System.err.println("getTokenInfo{"
-                                                 +"nest="+Utilities.nest()+"}");
+  if (Debug)Utilities.debug("MyStreamTokenizer.getTokenInfo{"
+                           +"nest="+Utilities.nest()+"}");
   ListIterator<TokenInfo> tokenHistoryIterator = TokenHistory.listIterator();
   while (tokenHistoryIterator.hasNext())
         {
@@ -597,8 +597,8 @@ public class MyStreamTokenizer
   long         startGlobalOffsetInBuffer = getBufferGlobalOffset(CurrentLocalOffsetInBuffer);
   if (getCharOrDie() != '\"')throw new MyParseException("Internal error. getTransparentString not at double quote{"
                                                   +"where="+where()+"}");
-  if (Debug)System.err.println("getTransparentString note Buffer{"
-                              +"Buffer="+Buffer.toString()+"}");
+  if (Debug)Utilities.debug("MyStreamTokenizer.getTransparentString note Buffer{"
+                           +"Buffer="+Buffer.toString()+"}");
   while (moreData())
         {
          char c = getCharOrDie();
@@ -622,7 +622,7 @@ public class MyStreamTokenizer
                 }
          if (result.length() > 8192)
             {
-             System.err.println("MyStreamTokenizer.getTransparentString result>8192{"
+             Utilities.error("MyStreamTokenizer.getTransparentString result>8192{"
                                +"result="+result.toString()+"}");
              throw new MyParseException("MyStreamTokenizer.getTransparentString result>8192");
             }
@@ -739,9 +739,9 @@ public class MyStreamTokenizer
   catch (IOException e){throw new MyIOException("I/O error{"
                                                +"ExceptionMessage="+e.getMessage()+"\t"
                                                +"where="           +where()       +"}");}
-  dumpData("before trimBuffer");
+  dumpData("MyStreamTokenizer.moreData before trimBuffer");
   trimBuffer();
-  dumpData("after trimBuffer");
+  dumpData("MyStreamTokenizer.moreData after trimBuffer");
   return true;
  }
 
@@ -806,7 +806,7 @@ public class MyStreamTokenizer
  public void setCurrentToken(long id)
  throws MyParseException
  {
-  if (Debug&&Utilities.debug())System.err.println("setCurrentToken{"
+  if (Debug)Utilities.debug("MyStreamTokenizer.setCurrentToken{"
                                                  +"nest="+Utilities.nest()+"}");
   TokenHistoryIterator = TokenHistory.listIterator();
   while (TokenHistoryIterator.hasNext())
@@ -846,7 +846,7 @@ public class MyStreamTokenizer
  {
   if (CurrentTokenInfo == null)throw new MyParseException("ungetToken. Internal error. No token to unget.{"
                                                          +"where="+where()+"}");
-  if (Debug&&Utilities.debug())System.err.println("ungetToken note token{"
+  if (Debug)Utilities.debug("MyStreamTokenizer.ungetToken note token{"
                                           +"FileName="+Source[SourceNo].FileName  +"\t"
                                           +"nest="    +Utilities.nest()           +"\t"
                                           +"token="   +CurrentTokenInfo.getToken()+"}");
