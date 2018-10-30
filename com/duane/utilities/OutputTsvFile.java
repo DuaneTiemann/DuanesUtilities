@@ -74,9 +74,9 @@ public class OutputTsvFile extends    RecordsEditor
  public String[] noteColumnNames(String[] columnNames)
  {
   OutputColumnNames = super.noteInputColumnNames(columnNames);
-  if (Debug)System.err.println("OutputTsvFile.noteColumnNames{"
-                              +"FileName="+File.getFileName()                  +"\t"
-                              +"columnNames="  +Utilities.toString(columnNames)+"}");
+  if (Debug)Utilities.debug("OutputTsvFile.noteColumnNames{"
+                           +"FileName="+File.getFileName()                  +"\t"
+                           +"columnNames="  +Utilities.toString(columnNames)+"}");
   return columnNames; // Don't tell caller what our column names will be.
  }
 
@@ -136,8 +136,9 @@ public class OutputTsvFile extends    RecordsEditor
 
  private void writeRow(String[] values)
  {
-  if (Debug)System.err.println("OutputTsvFile.writeRow{"
-                              +"values="+Utilities.toString(values)+"}");
+  if (Debug)Utilities.debug("OutputTsvFile.writeRow{"
+                           +"values="+Utilities.toString(values)+"}");
+  StringBuffer output = new StringBuffer();
   boolean first = true;
   for (String value : values)
       {
@@ -150,9 +151,11 @@ public class OutputTsvFile extends    RecordsEditor
           }
 
        if (first)first=false;
-       else      File.write(SeparatorString);
-       if (value!=null)File.write(value);
+       else      output.append(SeparatorString);
+       if (value!=null)output.append(value);
       }
-  File.write(File.getEOL());
+  output.append(File.getEOL());
+  File.write(output.toString());
+  if (Debug)Utilities.debug("OutputTsvFile.writeRow return");
  }
 }
