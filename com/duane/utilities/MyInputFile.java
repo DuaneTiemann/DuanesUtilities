@@ -24,37 +24,32 @@ import com.duane.utilities.ParmParserParm;
 @ParmParserParm("FileName")
 public class MyInputFile implements Initializable
 {
- private byte[]             Buffer                = new byte[8192];
- private int                BufferEndOffset       = 0;
- private int                BufferExpansionSize   = 8192;
- private int                BufferStartOffset     = 0;
- private long               CurrentFileOffset     = 0;
- private long               CurrentLineNumber     = 0;
- private boolean            Debug                 = false; 
- private RandomAccessFile   File                  = null;
- @ParmParserParm("Name of input file")
- private String             FileName              = null;
- private boolean            Initialized           = false;
- private String[]           LineHistory           = null;
- private Holder<Integer>    LineSegmentBegin1     = new Holder<Integer>(-1);
- private Holder<Integer>    LineSegmentEnd1       = new Holder<Integer>(-1);
- private Holder<Integer>    LineSegmentBegin2     = new Holder<Integer>(-1);
- private Holder<Integer>    LineSegmentEnd2       = new Holder<Integer>(-1);
-
+                                                       private byte[]             Buffer                = new byte[8192];
+                                                       private int                BufferEndOffset       = 0;
+                                                       private int                BufferExpansionSize   = 8192;
+                                                       private int                BufferStartOffset     = 0;
+                                                       private long               CurrentFileOffset     = 0;
+                                                       private long               CurrentLineNumber     = 0;
+                                                       private boolean            Debug                 = false; 
+ @ParmParserParm("(true)|false controls deletion of initial Unicode BOM (Byte Order Mark) in file")
+                                                       private boolean            DeleteBOM             = true;
+                                                       private RandomAccessFile   File                  = null;
+ @ParmParserParm("Name of input file")                 private String             FileName              = null;
+                                                       private boolean            Initialized           = false;
+                                                       private String[]           LineHistory           = null;
+                                                       private Holder<Integer>    LineSegmentBegin1     = new Holder<Integer>(-1);
+                                                       private Holder<Integer>    LineSegmentEnd1       = new Holder<Integer>(-1);
+                                                       private Holder<Integer>    LineSegmentBegin2     = new Holder<Integer>(-1);
+                                                       private Holder<Integer>    LineSegmentEnd2       = new Holder<Integer>(-1);
  @ParmParserParm("number of prior lines to keep for reporting problem context")
- private int                LineHistoryLimit      = 10;
- @ParmParserParm
- private int                MaxBufferSize         = 32*1024*1024;
- private int                NextLineHistoryIndex  = 0;
- @ParmParserParm("tail the file")
- private boolean            Tail                  = false;
- @ParmParserParm
- private long               TailSleepMs           = 5000;
- @ParmParserParm("beginning|end default=beginning")
- private String             TailStart             = "beginning";
- private HashMap<Long,Long> TellLineNumbers       = new HashMap<Long,Long>();
- @ParmParserParm("true|false default=Tail")            
- private Boolean            WaitForFileToAppear   = null;
+                                                       private int                LineHistoryLimit      = 10;
+ @ParmParserParm                                       private int                MaxBufferSize         = 32*1024*1024;
+                                                       private int                NextLineHistoryIndex  = 0;
+ @ParmParserParm("tail the file")                      private boolean            Tail                  = false;
+ @ParmParserParm                                       private long               TailSleepMs           = 5000;
+ @ParmParserParm("beginning|end default=beginning")    private String             TailStart             = "beginning";
+                                                       private HashMap<Long,Long> TellLineNumbers       = new HashMap<Long,Long>();
+ @ParmParserParm("true|false default=Tail")            private Boolean            WaitForFileToAppear   = null;
 
  public void close()
  {
@@ -421,7 +416,21 @@ public class MyInputFile implements Initializable
 
  private int readBytes(int start, int end)
  {
-  try   {return File.read(Buffer,start,end-start);}
+  try   {
+         long offset = File.getFilePointer();
+         int ret = File.read(Buffer,start,end-start);
+         if (DeleteBOM && offset == 0 && ret >= 3)
+            {
+             if (Buffer[0] == -17 && // ef 11101111 00010000 00010001 17
+                 Buffer[1] == -69 && // bb 10111011 01000100 01000101 69
+                 Buffer[2] == -65)   // bf 10111111 01000000 01000001 65
+                {
+                 File.seek(3);
+                 ret = File.read(Buffer,start,end-start);
+                }
+            }
+         return ret;
+        }
   catch (IOException e){Utilities.fatalError("MyInputFile.readBytesr IOException{"
                                             +"FileName="  +FileName              +"\t"
                                             +"exception=" +Utilities.toString(e) +"\t"
