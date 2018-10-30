@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.lang.String;
 import java.lang.Thread;
 import java.lang.Void;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -233,14 +234,14 @@ public class CollectSense implements Initializable
   Utilities.debug(false);
 
   try {((CollectSense)ParmParser.createObject(CollectSense.class, argv)).run();}
-  catch (DeploymentException    e){Utilities.fatalError("Exception{e="+Utilities.toString(e)+"}");}
-  catch (IllegalAccessException e){Utilities.fatalError("Exception{e="+Utilities.toString(e)+"}");}
-  catch (IllegalStateException  e){Utilities.fatalError("Exception{e="+Utilities.toString(e)+"}");}
-  catch (IOException            e){Utilities.fatalError("Exception{e="+Utilities.toString(e)+"}");}
-  catch (MyIOException          e){Utilities.fatalError("Exception{e="+Utilities.toString(e)+"}");}
-  catch (MyParseException       e){Utilities.fatalError("Exception{e="+Utilities.toString(e)+"}");}
-  catch (URISyntaxException     e){Utilities.fatalError("Exception{e="+Utilities.toString(e)+"}");}
-  catch (Exception              e){Utilities.fatalError("Exception{e="+Utilities.toString(e)+"}");}
+  catch (DeploymentException    e){Utilities.fatalError("CollectSense.main DeploymentException{e="   +Utilities.toString(e)+"}");}
+  catch (IllegalAccessException e){Utilities.fatalError("CollectSense.main IllegalAccessException{e="+Utilities.toString(e)+"}");}
+  catch (IllegalStateException  e){Utilities.fatalError("CollectSense.main IllegalStateException{e=" +Utilities.toString(e)+"}");}
+  catch (IOException            e){Utilities.fatalError("CollectSense.main IOException{e="           +Utilities.toString(e)+"}");}
+  catch (MyIOException          e){Utilities.fatalError("CollectSense.main MyIOException{e="         +Utilities.toString(e)+"}");}
+  catch (MyParseException       e){Utilities.fatalError("CollectSense.main MyParseException{e="      +Utilities.toString(e)+"}");}
+  catch (URISyntaxException     e){Utilities.fatalError("CollectSense.main URISyntaxException{e="    +Utilities.toString(e)+"}");}
+  catch (Exception              e){Utilities.fatalError("CollectSense.main Exception{e="             +Utilities.toString(e)+"}");}
  }
 
  private void noteColumnNames()
@@ -424,17 +425,20 @@ public class CollectSense implements Initializable
           if (Debug)Utilities.debug("CollectSense.run connecting to server");
           session = null;
           try {session = container.connectToServer(endpoint, configuration, URI.create(urlString));}
+          catch (ConnectException    e){Utilities.error("CollectSense.run connect DeploymentException{"
+                                                       +"e=" +Utilities.toString(e)+"}");}
           catch (DeploymentException e){Utilities.error("CollectSense.run connect DeploymentException{"
-                                                       +"e=" +Utilities.toString(e)+"}");
-                                        Utilities.sleepMs(retrySecs*1000);
-                                        retrySecs *= 2;
-                                        continue;
-                                       }
-          if (session != null)
+                                                       +"e=" +Utilities.toString(e)+"}");}
+
+          if (session == null)
              {
-              if (i>0)Utilities.error("CollectSense.run note successful getResponse after error(s)");
-              break retries;
+              Utilities.sleepMs(retrySecs*1000);
+              retrySecs *= 2;
+              continue;
              }
+
+          if (i>0)Utilities.error("CollectSense.run note successful getResponse after error(s)");
+          break retries;
          }
      Utilities.fatalError("CollectSense.run connect exceeded retries");
     }
