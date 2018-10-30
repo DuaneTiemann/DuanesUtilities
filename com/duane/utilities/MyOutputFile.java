@@ -9,22 +9,27 @@ import java.nio.channels.FileLock;
 @ParmParserParm("FileName")
 public class MyOutputFile
 {
- @ParmParserParm("true|(false)"                                 ) private boolean          Append           = false;
- @ParmParserParm("end of line characters to use. default \\r\\n") private String           EOL              = "\r\n";
-                                                                  private FileLock         FileLock         = null;
- @ParmParserParm("name of output file"                          ) private String           FileName         = null;
-                                                                  private boolean          LinePending      = false;
-                                                                  private long             LinesWritten     = 0;
+ @ParmParserParm("true|(false)"                                         ) private boolean          Append           = false;
+ @ParmParserParm("end of line characters to use. default \\r\\n"        ) private String           EOL              = "\r\n";
+                                                                          private FileLock         FileLock         = null;
+ @ParmParserParm("name of output file"                                  ) private String           FileName         = null;
+ @ParmParserParm("(none): let OS determine disk writes. Much quicker than data.\t"
+                +"data: flush data to disk on each write\t"
+                +"meta: flush data and position pointer on each write. A little slower than data.")
+                                                                          private String           Flush            = "none";
+ @ParmParserParm("Flush data and position pointer on each write"        ) private boolean          FlushDataMeta    = true;
+                                                                          private boolean          LinePending      = false;
+                                                                          private long             LinesWritten     = 0;
 
  @ParmParserParm("true|(false) May be set by utility if not specified here."
                 +"File is protected from multiple utility instances writing to it accidentally. There is no protection from\t"
                 +"or interference with other applications, editors, etc. Creates (and locks) associated .lock file.\t"
                 +".lock files can be deleted if the happen to linger after crashes, etc.")
-                                                                  private Boolean          Lock             = null;
-                                                                  private boolean          Locked           = false;
-                                                                  private RandomAccessFile LockFile         = null;
-                                                                  private boolean          Opened           = false;
-                                                                  private RandomAccessFile RandomAccessFile = null;
+                                                                          private Boolean          Lock             = null;
+                                                                          private boolean          Locked           = false;
+                                                                          private RandomAccessFile LockFile         = null;
+                                                                          private boolean          Opened           = false;
+                                                                          private RandomAccessFile RandomAccessFile = null;
  
  public synchronized void close()
  {
@@ -90,9 +95,16 @@ public class MyOutputFile
   Opened       = true;
   Locked       = false;
   if (Lock == null)Lock = false;
-  try
-      {
-       RandomAccessFile = new RandomAccessFile(FileName,"rws");
+  try {
+      switch (Flush.toLowerCase())
+             {
+              case "":
+              case "none": RandomAccessFile = new RandomAccessFile(FileName, "rw" ); break;
+              case "data": RandomAccessFile = new RandomAccessFile(FileName, "rws"); break;
+              case "meta": RandomAccessFile = new RandomAccessFile(FileName, "rwd"); break;
+              default    : Utilities.error("MyOutputFile.open unknown Flush{"
+                                          +"Flush="+Flush+"}");
+             }
        if (Lock)lock();
        if (Append)
            RandomAccessFile.seek(RandomAccessFile.length());
