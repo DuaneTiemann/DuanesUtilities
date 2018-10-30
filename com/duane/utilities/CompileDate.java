@@ -1,2 +1,2 @@
 package com.duane.utilities;                                                           
-public class CompileDate{public static String getDate(){return "Fri 10/26/2018  9:34:57.21";}} 
+public class CompileDate{public static String getDate(){return "Mon 10/29/2018 23:00:21.92";}} 
