@@ -127,8 +127,13 @@ public class CollectKasa implements Initializable
       OutputStream.write(fullRequestBytes);
       len = InputStream.read(lengthBytesBuffer);
      }
-  if (len != 4)Utilities.fatalError("CollectKasa.getResponse unable to get response length{"
-                                   +"len="+len+"}");
+  if (len != 4)
+     {
+      Utilities.error("CollectKasa.getResponse unable to get response length{"
+                              +"len="+len+"}");
+      setupSocket();
+      return null;
+     }
   int          responseLength    = Utilities.bytesToInt(lengthBytesBuffer);
   if (responseLength > 1500 ||
       responseLength <    0)Utilities.fatalError("CollectKasa.getResponse suspicious response length{"
@@ -295,6 +300,7 @@ public class CollectKasa implements Initializable
          {
           for (int i=0;i<Retries;i++)
               {
+               response = null;
                try {response = getResponse("{\"emeter\":{\"get_realtime\":{}}}");}
                catch (IOException e)
                      {
@@ -303,10 +309,14 @@ public class CollectKasa implements Initializable
                       try {setupSocket();}
                       catch (IOException e1){Utilities.error("CollectKasa.run IOException from setupSocket{"
                                                             +"e1="+Utilities.toString(e1)+"}");}
-                      Utilities.sleepMs(retrySecs * 1000);
-                      retrySecs *= 2;
-                      continue;
+                      response = null;
                      }
+               if (response == null)
+                   {
+                    Utilities.sleepMs(retrySecs * 1000);
+                    retrySecs *= 2;
+                    continue;
+                   }
                if (i > 0) Utilities.error("CollectKasa.run note successful getResponse after error(s)");
                break retry;
               }
