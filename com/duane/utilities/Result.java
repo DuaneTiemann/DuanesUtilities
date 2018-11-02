@@ -133,8 +133,7 @@ public class Result implements Initializable
 
   if (Format.equals("datetime"))
      {
-      if (Places == 3)values[ResultFieldNo] = Utilities.toStringMillis(new Date(Utilities.parseLong(Stack.get(0))));
-      else            values[ResultFieldNo] = Utilities.toString      (new Date(Utilities.parseLong(Stack.get(0))));
+      values[ResultFieldNo] = Utilities.toStringMillis(new Date(Utilities.parseLong(Stack.get(0))));
      }
   else
   if (Format.equals("number"))
