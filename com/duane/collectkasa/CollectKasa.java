@@ -68,12 +68,12 @@ public class CollectKasa implements Initializable
 
  private class Response
  {
-  public String Current=null;
-  public String Voltage=null;
-  public String Power  =null;
-  public String Total  =null;
+  public double Current=Double.NaN;
+  public double Voltage=Double.NaN;
+  public double Power  =Double.NaN;
+  public double Total  =Double.NaN;
 
-  public Response(String current, String voltage, String power, String total)
+  public Response(double current, double voltage, double power, double total)
   {
    Current=current;
    Voltage=voltage;
@@ -189,7 +189,7 @@ public class CollectKasa implements Initializable
                                                                                      "Current","Voltage","Power","Total"});
  }
 
- private void outputStats(String current, String voltage, String power, String total)
+ private void outputStats(double current,double voltage,double power,double total)
  {
   Date now = new Date();
   if (now.compareTo(OutputCollectionInterval.getStop())>0)
@@ -215,15 +215,7 @@ public class CollectKasa implements Initializable
                                                                                    // closing, etc.
      }
 
-  if (!Utilities.isFloat(power))
-     {
-      Utilities.error("CollectKasa.outputStats power is not numeric{"
-                     +"power="+power+"}");
-      return;
-     }
-
-  double doublePower = Utilities.parseDouble(power);
-  if (doublePower != 0)Stats.noteValue(doublePower);
+  if (power != 0)Stats.noteValue(power);
   Count ++;
  }
 
@@ -235,18 +227,18 @@ public class CollectKasa implements Initializable
       {
        outputFile.put(new String[]{Utilities.toStringMillis(OutputCollectionInterval.getStart()),
                                    Utilities.toStringMillis(OutputCollectionInterval.getStop ()), 
-                                   DeviceName                                                ,
-                                   Utilities.toString      (Stats.getCV  ().getResult(count)),
-                                   Utilities.toString      (Stats.getMax ().getResult(     )),
-                                   Utilities.toString      (Stats.getMean().getResult(count)),
-                                   Utilities.toString      (Stats.getMin ().getResult(     )),
-                                   Utilities.toString      (count                           ),
-                                   Utilities.toString      (Stats.getN   ().getResult(     )),
-                                   Utilities.toStringMillis(now                             ),
-                                   lastResponse.Current                                      ,
-                                   lastResponse.Voltage                                      ,
-                                   lastResponse.Power                                        ,
-                                   lastResponse.Total                                        });
+                                   DeviceName                                                   ,
+                                   Utilities.toString      (Stats.getCV  ().getResult(count)   ),
+                                   Utilities.toString      (Stats.getMax ().getResult(     )   ),
+                                   Utilities.toString      (Stats.getMean().getResult(count)   ),
+                                   Utilities.toString      (Stats.getMin ().getResult(     )   ),
+                                   Utilities.toString      (count                              ),
+                                   Utilities.toString      (Stats.getN   ().getResult(     )   ),
+                                   Utilities.toStringMillis(now                                ),
+                                   Utilities.toString      (lastResponse.Current               ),
+                                   Utilities.toString      (lastResponse.Voltage               ),
+                                   Utilities.toString      (lastResponse.Power                 ),
+                                   Utilities.toString      (lastResponse.Total                 )});
        outputFile.flush();
       }
  }
@@ -330,6 +322,10 @@ public class CollectKasa implements Initializable
              String     voltage      = "";
              String     power        = "";
              String     total        = "";
+             String     current_ma   = "";
+             String     voltage_mv   = "";
+             String     power_mw     = "";
+             String     total_wh     = "";
              for (String[] row : results)
                   if (row.length == 3)
                      {
@@ -337,17 +333,22 @@ public class CollectKasa implements Initializable
                                                 +"row="+Utilities.toString(row)+"}");
                       switch (row[1])
                              {
-                              case "emeter:get_realtime:current"   :current = row[2];break;
-                              case "emeter:get_realtime:current_ma":current = row[2];break;
-                              case "emeter:get_realtime:power"     :power   = row[2];break;
-                              case "emeter:get_realtime:power_mw"  :power   = row[2];break;
-                              case "emeter:get_realtime:total"     :total   = row[2];break;
-                              case "emeter:get_realtime:total_wh"  :total   = row[2];break;
-                              case "emeter:get_realtime:voltage"   :voltage = row[2];break;
-                              case "emeter:get_realtime:voltage_mv":voltage = row[2];break;
+                              case "emeter:get_realtime:current"   :current    = row[2];break;
+                              case "emeter:get_realtime:current_ma":current_ma = row[2];break;
+                              case "emeter:get_realtime:power"     :power      = row[2];break;
+                              case "emeter:get_realtime:power_mw"  :power_mw   = row[2];break;
+                              case "emeter:get_realtime:total"     :total      = row[2];break;
+                              case "emeter:get_realtime:total_wh"  :total_wh   = row[2];break;
+                              case "emeter:get_realtime:voltage"   :voltage    = row[2];break;
+                              case "emeter:get_realtime:voltage_mv":voltage_mv = row[2];break;
                             }
                      }
-             outputStats(current,voltage,power,total);
+             double current_ = current.length()>0?Utilities.parseDouble(current):Utilities.parseDouble(current_ma)/1000;
+             double power_   = power  .length()>0?Utilities.parseDouble(power  ):Utilities.parseDouble(power_mw  )/1000;
+             double voltage_ = voltage.length()>0?Utilities.parseDouble(voltage):Utilities.parseDouble(voltage_mv)/1000;
+             double total_   = total  .length()>0?Utilities.parseDouble(total  ):Utilities.parseDouble(total_wh  )/1000;
+
+             outputStats(current_,voltage_,power_,total_);
 
              if (stopTime > 0 && targetTime >= stopTime)break;
             }
