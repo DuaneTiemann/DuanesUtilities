@@ -67,6 +67,8 @@ public class Utilities
  private static SimpleDateFormat SDFymdhms3                   =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"         );
  private static SimpleDateFormat SDFymdhms4                   =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS"     );
  private static SimpleDateFormat SDFymdhms5                   =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS z"   );
+ private static SimpleDateFormat SDFymdhms6                   =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"     );
+ private static SimpleDateFormat SDFymdhms7                   =new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS XXX" );
  private static SimpleDateFormat SDFyyyy_mm_dd                =new SimpleDateFormat("yyyy-MM-dd"                  );
  private static SimpleDateFormat SDFyyyy_mm_dd_hh_mm_ss_SSS_z =new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS z"   );
  private static SimpleDateFormat SDFyyyy_mm_dd_hh_mm_ss_z     =new SimpleDateFormat("yyyy/MM/dd HH:mm:ss z"       );
@@ -628,13 +630,15 @@ public class Utilities
   try  {
         int pos = s.indexOf(".");
         if (pos != -1)
-           {
+           {                                                   // trim fraction to milliseconds
             int lastDigit = pos;
             for (int i=pos+1;i<s.length();i++)
                  if (Character.isDigit(s.charAt(i)))lastDigit=i;
                  else break;
             if (lastDigit > pos+4)
                 s = s.substring(0,pos+4) + s.substring(lastDigit+1);
+//            debug("Utilities.isGetDate period{"
+//                 +"s="+s+"}");
            }
        
         strings = s.split(" +");
@@ -678,10 +682,19 @@ public class Utilities
                 else                              return SDFymdhms2.parse(s); 
             else
             if (strings[0].indexOf("-") == 4)
-                if (strings[1].split(":").length== 2)return SDFymdhm  .parse(s); else
-                if (strings[1].indexOf(",")     ==-1)return SDFymdhms3.parse(s); else
-                                                     return SDFymdhms4.parse(s);
-            else
+               {
+                String[] strings1 = strings[1].split(":");
+                if (strings1.length==2)return SDFymdhm.parse(s);
+                if (strings1.length==3)
+                   {
+//                    debug("Utilities.isGetDate SDFymdhms6{"
+//                         +"s="+s+"}");
+                    if (strings1[2].indexOf(".") != -1)return SDFymdhms6.parse(s);
+                    if (strings1[2].indexOf(",") != -1)return SDFymdhms4.parse(s);
+                    return SDFymdhms3.parse(s);
+                   }
+               }
+             else
             if (strings[1].indexOf("/") >  0)     return SDFmdy    .parse(strings[1]);
 
                     
@@ -694,8 +707,17 @@ public class Utilities
                 String[] hms = strings[1].split(":") ;
                 if (hms.length == 2)return SDFymdhmampm.parse(s); else
                 if (hms.length == 3)
-                    if (strings[1].contains("."))return SDFyyyy_mm_dd_hh_mm_ss_SSS_z.parse(s);
-                    else                         return SDF3ymdhmsz                 .parse(s);
+                   {
+                     if (strings[1].contains("."))
+                         if (strings[2].startsWith("-")             ||
+                             strings[2].startsWith("+")             ||
+                             Character.isDigit(strings[2].charAt(0)))
+                             return SDFymdhms7.parse(s);
+                         else
+                             return SDFyyyy_mm_dd_hh_mm_ss_SSS_z.parse(s);
+                     else  
+                         return SDF3ymdhmsz.parse(s);
+                   }
                 else return null;
                }
             if (strings[0].indexOf("-") == 4)
@@ -1567,7 +1589,7 @@ public class Utilities
  public static String toStringMillis(Date value)
  {
   if (value == null)return null;
-  return SDFymdhms.format(value);
+  return SDFymdhms7.format(value);
  }
 
  public static String[] toStrings(double[] a)
