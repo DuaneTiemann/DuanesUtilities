@@ -66,7 +66,6 @@ import com.duane.utilities.Variable;
 public class CollectSense implements Initializable
 {
                                                                            private String                  AccessToken                 = null;
- @ParmParserParm("Sense Account Number - required for login"             ) private String                  Account                     = null;
  @ParmParserParm("true|(false)"                                          ) private static boolean          Debug                       = false;
                                                                            private String[]                ColumnNames                 = new String[0];
  @ParmParserParm("Number of seconds to include for each data record (5)\t"
@@ -364,13 +363,11 @@ public class CollectSense implements Initializable
  {
   Date startTime = new Date();
   Utilities.log("CollectSense{"
-               +"Compile Time="          +CompileDate.getDate()+"\t"
+               +"Compile Time="          +CompileDate.getDate() +"\t"
                +"CollectionIntervalSecs="+CollectionIntervalSecs+"\t"
-               +"DurationSecs="          +DurationSecs+"\t"
-               +"Account="               +Account              +"\t"
-               +"Email="                 +Email                +"}");
+               +"DurationSecs="          +DurationSecs          +"\t"
+               +"Email="                 +Email                 +"}");
 
-  if (Account  == null)Utilities.fatalError("run Account not provided" );
   if (Email    == null)Utilities.fatalError("run Email not provided"   );
   if (Password == null)Utilities.fatalError("run Password not provided");
 
@@ -416,7 +413,7 @@ public class CollectSense implements Initializable
         if (waitTime <= 0)break;
        }
 
-    String urlString="wss://clientrt.sense.com/monitors/"+Account+"/realtimefeed?access_token="+AccessToken;
+    String urlString="wss://clientrt.sense.com/monitors/29603/realtimefeed?access_token="+AccessToken;
     int retrySecs = 1;
     retries:
     {
