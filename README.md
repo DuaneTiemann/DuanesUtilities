@@ -4,13 +4,31 @@ The build just requires javac. No maven, ant, Eclipse, etc. I use java jdk 1.8. 
 
 Jar files are available at https://drive.google.com/open?id=1YEqEQb3opZ-8zBCVRfJtuSP9Ww9CL7-0
 
-Quality: I've been using (and tweaking) the infrastructure for years. It should work, but I know it isn't bulletproof yet. Invalid input can be
-         tough to track down and can produce exceptions. I keep working to help track down problems better, but always pointing to the exact
-         spot is still more of an aspiration. I wouldn't be surprised if there is a better environment to do what I want these days.
+Changes: 
+
+2018/10/26 All          Initial version
+
+2018/10/30 All          Repaired horible performance issue writing to output files
+                        Added the Flush Keyword for files to manage performance vs currency
+
+           CollectKasa  Improved error recovery
+
+2018/11/02 All          Changed output file record timestamp to include time zone
+                        It can be tweaked to be Excel compatible. AFAICT Excel doesn't allow time zones.
+                        See CollectSense example below.
+                        
+                        Repaired log rolling interval. It was GMT based. Now it respects the current time zone.
+                        
+           CollectKasa  Normalized current, voltage, power, total for V2. The V2 reports milli-amps, etc. Divided by 1000 for V2.
+           CollectSense Removed Account keyword.  It will fail now if you try to supply Account. Account was a bogus variable.
+
+Quality: It should work, but I know it isn't bulletproof yet. Invalid input can be tough to track down and can produce exceptions.
+         I keep working to help track down problems better, but always pointing to the exact spot is still more of an aspiration. 
+         I wouldn't be surprised if there is a better environment to do what I want these days.
 
          I expect these will do until something better comes along. I'll keep refining. Maybe add a GUI.
 
-         Feedback to duanetiemann@prodigy.net
+Feedback: duanetiemann@prodigy.net
 
 Invocations:
 java -jar CollectKasa.jar
@@ -29,7 +47,6 @@ then looking at the Arp map. e.g.
          arp -a
 
 The utilities rely on the same home grown infrastructure that allows manuipulation of output before it is written.
-The output is a tsv (tab separated values) file with column headers suitable for import into Excel.
 More columns are supplied than are likely to be useful. It is EXPECTED that they will usually be filtered. (See Kasa sample below.)
 Note that multiple OutputFiles are allowed, though they all respect the same roll parameter.
 
@@ -51,17 +68,29 @@ OutputFile            ={
 PollingIntervalSecs   =    1
 Retries               =   10
 
-  Collects for 3 days, summarizes by minute, rolls output file at midnight, appends output file name datetime stamps.
+  Collects forever, summarizes by minute, rolls output file at midnight, appends output file name datetime stamps, Excel timestamp.
 java -cp javax.websocket-api-1.1.jar;tyrus-standalone-client-1.9.jar;CollectSense.jar com.duane.collectsense.CollectSense <CollectSense.inp
 CollectSense.inp:
-Account               =<Your Sense Account Number>
-CollectionIntervalSecs=   60
-DurationSecs          = 259200
-Email                 =<email for your account>
-OutputFile            =CollectSense.tsv
-OutputFileIntervalSecs=86400
-Password              ="<password for your Sense account"           
-Retries               = 10
+CollectionIntervalSecs    =   60
+DurationSecs              =    0
+Email                     =<email for your account>
+OutputFile                ={
+                            File=CollectSense.tsv
+                            Result={
+                                    Name=ExcelTime
+                                    Operation={
+                                               {Name=IntervalStartTime Operation=split       Value=" "}
+                                               {                       Operation=pop                  } // discard time zone
+                                               {Name=time              Operation=pop                  } // time 
+                                               {                       Operation=concatenate Value=" "}
+                                               {Name=time              Operation=concatenate          } 
+                                              }
+                                   }
+
+                           }
+OutputFileRollIntervalSecs=86400
+Password                  ="<password for your Sense account"           
+Retries                   =   14
 
 java -jar c:\Duane\Utilities\Distribution\CollectWemo.jar <CollectWemo.inp
 CollectWemo.inp:
