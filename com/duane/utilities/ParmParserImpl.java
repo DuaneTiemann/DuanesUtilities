@@ -1499,8 +1499,12 @@ This method parses an array of strings into the target object.
                                           +"target.class="     +target.getClass().toString()+"\t"
                                           +"targetClass="      +getClass(target,createFlag) +"\t"
                                           +"targetGenericType="+targetGenericType           +"}");
-  Utilities.vetInputFile(fileName);
-  try{
+  try {Utilities.vetInputFile(fileName);}
+  catch (MyIOException e){Utilities.fatalError("ParmParserImpl.parseFile file not found{"
+                                              +"fileName="+fileName                 +"\t"
+                                              +"where="   +parms.whereCurrentToken()+"}");}
+  try
+      {
       MyStreamTokenizer mst    = new MyStreamTokenizer(new FileReader(fileName),fileName);
       mst.noteSubstitutions(parms.getSubstitutions());
       mst.setDebug(false);
