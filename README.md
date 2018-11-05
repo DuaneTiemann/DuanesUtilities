@@ -22,6 +22,10 @@ Changes:
            CollectKasa  Normalized current, voltage, power, total for V2. The V2 reports milli-amps, etc. Divided by 1000 for V2.
            CollectSense Removed Account keyword.  It will fail now if you try to supply Account. Account was a bogus variable.
 
+2018/11/04 All          Output file rolling still wasn't right. It was repeating the 1st file name and then lagged the file name. 
+                        This resulted in the first file being overwritten and all files contained data that should have been in the prior file.
+                        Reversed order of renaming output files and updating Interval.
+
 Quality: It should work, but I know it isn't bulletproof yet. Invalid input can be tough to track down and can produce exceptions.
          I keep working to help track down problems better, but always pointing to the exact spot is still more of an aspiration. 
          I wouldn't be surprised if there is a better environment to do what I want these days.
