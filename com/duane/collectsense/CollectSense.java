@@ -295,10 +295,10 @@ public class CollectSense implements Initializable
      {
       closeOutputFiles();
       for (OutputTsvFile outputFile : OutputFile)Utilities.log(outputFile.stats());
-      OutputTsvFileNamer.nameOutputTsvFiles(OutputFile,OutputFileCollectionInterval);
       OutputFileCollectionInterval = new CollectionInterval(OutputFileIntervalMs); // If outputStats took a really long time the response could be included in a file 
                                                                          // that is too late for it. That would highlight the delay, which would have to be 
                                                                          // extreme. e.g. Output files cut every minute with a 2 minute delay in writing, closing, etc.
+      OutputTsvFileNamer.nameOutputTsvFiles(OutputFile,OutputFileCollectionInterval);
      }
  }
 
@@ -376,10 +376,10 @@ public class CollectSense implements Initializable
       OutputFileIntervalMs = -1;
   else
      {
-      if (!Utilities.isFloat(OutputFileRollIntervalSecs))Utilities.fatalError("CollectKasa.run invalid OutputFileRollIntevalSecs. Must be >= 0 or NoRoll{"
+      if (!Utilities.isFloat(OutputFileRollIntervalSecs))Utilities.fatalError("CollectSense.run invalid OutputFileRollIntevalSecs. Must be >= 0 or NoRoll{"
                                                                              +"OutputFileRollIntervalSecs="+OutputFileRollIntervalSecs+"}");
       double outputFileRollIntervalSecs = Utilities.parseDouble(OutputFileRollIntervalSecs);
-      if (outputFileRollIntervalSecs < 0)Utilities.fatalError("CollectKasa.run invalid OutputFileRollIntevalSecs. Must be >= 0 or NoRoll{"
+      if (outputFileRollIntervalSecs < 0)Utilities.fatalError("CollectSense.run invalid OutputFileRollIntevalSecs. Must be >= 0 or NoRoll{"
                                                              +"OutputFileRollIntervalSecs="+OutputFileRollIntervalSecs+"}");
       OutputFileIntervalMs = (long)(outputFileRollIntervalSecs * 1000);
      }

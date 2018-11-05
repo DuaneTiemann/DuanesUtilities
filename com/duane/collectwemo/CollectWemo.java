@@ -172,11 +172,11 @@ public class CollectWemo implements Initializable
      {
       closeOutputFiles();
       for (OutputTsvFile outputFile : OutputFile)Utilities.log(outputFile.stats());
-      OutputTsvFileNamer.nameOutputTsvFiles(OutputFile,OutputFileCollectionInterval);
       OutputFileCollectionInterval = new CollectionInterval(OutputFileIntervalMs); // If outputStats took a really long time the response could be included in a file 
                                                                                    // that is too late for it. That would highlight the delay, which would have to be 
                                                                                    // extreme. e.g. Output files cut every minute with a 2 minute delay in writing, 
                                                                                    // closing, etc.
+      OutputTsvFileNamer.nameOutputTsvFiles(OutputFile,OutputFileCollectionInterval);
      }
 
   if (!Utilities.isFloat(response.Current))
